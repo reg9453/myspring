@@ -19,15 +19,25 @@ import com.example.myspring.model.ProductPageModel;
 import com.example.myspring.model.ProductResponseModel;
 import com.example.myspring.model.ProductV2ResponseModel;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpSession;
 
 // @Hidden
 
-@CrossOrigin(origins = "*") // 允許不同網域的網頁來呼叫API
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // 允許不同網域的網頁來呼叫API
 @RestController
 public class ProductController extends BaseController {
     // 取得所有商品API
     @RequestMapping(value = "/product", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getProduct() {
+    public ResponseEntity getProduct(HttpSession session) {
+        System.out.println("Product Seesion ID: " + session.getId());
+
+        // 判斷有無登入過
+        String username = (String)session.getAttribute("login");
+
+        if(username == null) {
+            return new ResponseEntity<Object>(new ProductResponseModel(999, "未登入", null), HttpStatus.OK);
+        }
+
         ArrayList<ProductModel> result = getProductList();
 
         if(result == null) // 失敗

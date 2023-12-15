@@ -29,8 +29,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 
-@CrossOrigin(origins = "*") // 允許不同網域的網頁來呼叫API
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // 允許不同網域的網頁來呼叫API
 @RestController  
 public class LoginController extends BaseController {
     @RequestMapping(value = "/login", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -44,16 +45,23 @@ public class LoginController extends BaseController {
             content = @Content), 
     })
     public ResponseEntity Login(@Parameter(description = "帳號", example = "aaron") String username, 
-        @Parameter(description = "密碼", example = "1234") String password) { 
+        @Parameter(description = "密碼", example = "1234") String password, HttpSession session) { 
+
+        System.out.println("Login Seesion ID: " + session.getId());
         // 登入
         String result = login(username, password);
 
         LoginResponseModel response = null;
 
         if(result.length() == 0) {
+            // 將登入資訊寫入session
+            session.setAttribute("login", username);
             // 成功
             response = new LoginResponseModel(0, "登入成功", username);
         } else {
+            // 將登入資訊寫入session
+            session.removeAttribute("login");
+
             // 失敗
             response = new LoginResponseModel(1, result, username);
         }
